@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use std::hash::Hash;
 
 pub struct Graph<N, ND, ED> {
-    nodes: HashMap<N, ND>,
-    edges: HashMap<N, HashMap<N, ED>>,
+    nodes: HashMap<N, Option<ND>>,
+    edges: HashMap<N, HashMap<N, Option<ED>>>,
 }
 
 impl<N, ND, ED> Graph<N, ND, ED>
@@ -18,7 +18,7 @@ impl<N, ND, ED> Graph<N, ND, ED>
         }
     }
 
-    fn add_node(&mut self, node: N, data: ND) {
+    fn add_node(&mut self, node: N, data: Option<ND>) {
         if self.nodes.contains_key(&node) {
             self.nodes.insert(node, data); // If the key already exists, data will be updated.
         } else {
@@ -27,18 +27,16 @@ impl<N, ND, ED> Graph<N, ND, ED>
         }
     }
 
-    fn add_edge(&mut self, u: N, v: N, data: ED) {
+    fn add_edge(&mut self, u: N, v: N, data: Option<ED>) {
         // Add nodes.
-        // if !self.nodes.contains_key(&u) {
-        //     let u_clone = u.clone();
-        //     self.nodes.insert(u, None);
-        //     self.edges.insert(u_clone, HashMap::new());
-        // }
-        // if !self.nodes.contains_key(&v) {
-        //     let v_clone = v.clone();
-        //     self.nodes.insert(v, None);
-        //     self.edges.insert(v_clone, HashMap::new());
-        // }
+        if !self.nodes.contains_key(&u) {
+            self.nodes.insert(u, None);
+            self.edges.insert(u, HashMap::new());
+        }
+        if !self.nodes.contains_key(&v) {
+            self.nodes.insert(v, None);
+            self.edges.insert(v, HashMap::new());
+        }
 
         // Add edges.
         self.edges
@@ -60,26 +58,23 @@ mod tests {
     fn test_add_node() {
         let mut graph: Graph<&str, u32, u32> = Graph::new();
 
-        graph.add_node("node1", 1);
-        graph.add_node("node2", 2);
-        graph.add_node("node1", 3);
+        graph.add_node("node1", Some(1));
+        graph.add_node("node1", Some(2));
+        graph.add_node("node2", None);
 
-        assert!(graph.nodes["node1"] == 3);
-        assert!(graph.nodes["node2"] == 2);
+        assert!(graph.nodes["node1"] == Some(2));
+        assert!(graph.nodes["node2"] == None);
     }
 
     #[test]
     fn test_add_edge() {
         let mut graph: Graph<&str, u32, u32> = Graph::new();
 
-        graph.add_node("node1", 1);
-        graph.add_node("node2", 2);
-        graph.add_node("node3", 3);
+        graph.add_edge("node1", "node2", Some(10));
+        graph.add_edge("node1", "node2", Some(20));
+        graph.add_edge("node2", "node3", None);
 
-        graph.add_edge("node1", "node2", 10);
-        graph.add_edge("node2", "node3", 20);
-
-        assert!(graph.edges["node1"]["node2"] == 10);
-        assert!(graph.edges["node2"]["node3"] == 20);
+        assert!(graph.edges["node1"]["node2"] == Some(20));
+        assert!(graph.edges["node2"]["node3"] == None);
     }
 }
