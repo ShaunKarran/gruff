@@ -1,5 +1,6 @@
 use std::cmp::Eq;
 use std::collections::HashMap;
+use std::collections::hash_map::{Iter, Keys};
 use std::hash::Hash;
 
 pub struct Graph<N, ND, ED> {
@@ -30,18 +31,21 @@ impl<N, ND, ED> Graph<N, ND, ED>
         self.nodes.get(&node)
     }
 
+    pub fn nodes(&self) -> Keys<N, ND> {
+        self.nodes.keys()
+    }
+
+    pub fn nodes_data(&self) -> Iter<N, ND> {
+        self.nodes.iter()
+    }
+
     pub fn add_edge(&mut self, u: N, v: N, data: ED) {
-        // Add nodes.
         // if !self.nodes.contains_key(&u) {
-        //     self.nodes.insert(u, data);
-        //     self.edges.insert(u, HashMap::new());
+        //     // TODO: Cant add edge if node doesnt exist.
         // }
         // if !self.nodes.contains_key(&v) {
-        //     self.nodes.insert(v, data);
-        //     self.edges.insert(v, HashMap::new());
+        //     // TODO: Cant add edge if node doesnt exist.
         // }
-
-        // TODO: If not adding nodes when adding an edge, still check for nodes existance.
 
         // Add edges.
         self.edges
@@ -81,6 +85,36 @@ mod tests {
         assert!(*graph.node_data("node1").unwrap() == 1);
         assert!(*graph.node_data("node2").unwrap() == 2);
         assert!(graph.node_data("no_node") == None);
+    }
+
+    #[test]
+    fn test_nodes() {
+        let mut graph: Graph<&str, u32, u32> = Graph::new();
+
+        graph.add_node("node1", 1);
+        graph.add_node("node2", 2);
+        graph.add_node("node3", 3);
+
+        let nodes: Vec<_> = graph.nodes().cloned().collect();
+
+        assert!(nodes.contains(&"node1"));
+        assert!(nodes.contains(&"node2"));
+        assert!(nodes.contains(&"node3"));
+    }
+
+    #[test]
+    fn test_nodes_data() {
+        let mut graph: Graph<&str, u32, u32> = Graph::new();
+
+        graph.add_node("node1", 1);
+        graph.add_node("node2", 2);
+        graph.add_node("node3", 3);
+
+        let nodes_data: Vec<_> = graph.nodes_data().collect();
+
+        assert!(nodes_data.contains(&(&"node1", &1)));
+        assert!(nodes_data.contains(&(&"node2", &2)));
+        assert!(nodes_data.contains(&(&"node3", &3)));
     }
 
     #[test]
